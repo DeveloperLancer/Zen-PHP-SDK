@@ -15,7 +15,7 @@ enum PaymentMethodEnum: string
     case PME_BLIK = "PME_BLIK";
 //    case PME_GOOGLEPAY = "PME_GOOGLEPAY";
     case PME_IDEAL = "PME_IDEAL";
-    case PME_CARD = "PME_CARD";
+    case PME_CARD = "PME_CARD"; //todo visa i mastercard mają takie samo
     case PME_NEOSURF = "PME_NEOSURF";
     case PME_NETELLER_WALLET = "PME_NETELLER_WALLET";
     case PME_PBL = "PME_PBL"; //todo ma duzo kanałów, sprawdzić czy każda należy do tej samej metody czyli PME_PBL

@@ -16,7 +16,7 @@ enum PaymentChannelEnum: string
     case PCL_BLIK = "PCL_BLIK";
     case PCL_GOOGLEPAY = "PCL_GOOGLEPAY";
     case PCL_IDEAL = "PCL_IDEAL";
-    case PCL_CARD = "PCL_CARD"; //todo visa i mastercard mają takie samo
+    case PCL_CARD = "PCL_CARD";
     case PCL_NEOSURF = "PCL_NEOSURF";
     case PCL_NETELLER_WALLET = "PCL_NETELLER_WALLET";
     case PCL_PBL_ALIOR = "PCL_PBL_ALIOR";
