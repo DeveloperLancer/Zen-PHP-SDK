@@ -9,7 +9,12 @@
 
 namespace DevLancer\Zen\Container\Address;
 
-use DevLancer\Zen\Exception\InvalidArgumentException;
+use DevLancer\Zen\Validation\ValidationList;
+use Symfony\Component\Validator\Constraints\Country;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Validation;
 
 abstract class Address implements \JsonSerializable
 {
@@ -92,16 +97,9 @@ abstract class Address implements \JsonSerializable
      * Customer's ID as provided by the merchant
      *
      * @param string|null $id The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length, or it does not follow the pattern: "^[a-zA-Z0-9_-]+$"
      */
     public function setId(?string $id): void
     {
-        if ($id && strlen($id) > 64)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "id", 64));
-
-        if ($id && preg_match("/^[a-zA-Z0-9_-]+$/", $id) === false)
-            throw new InvalidArgumentException(sprintf("The value %s is invalid", $id));
-
         $this->id = $id;
     }
 
@@ -119,13 +117,9 @@ abstract class Address implements \JsonSerializable
      * Customer's firstname
      *
      * @param string|null $firstName The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setFirstName(?string $firstName): void
     {
-        if ($firstName && strlen($firstName) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "firstName", 128));
-
         $this->firstName = $firstName;
     }
 
@@ -143,13 +137,9 @@ abstract class Address implements \JsonSerializable
      * Customer's lastname
      *
      * @param string|null $lastName The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setLastName(?string $lastName): void
     {
-        if ($lastName && strlen($lastName) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "lastName", 128));
-
         $this->lastName = $lastName;
     }
 
@@ -167,13 +157,9 @@ abstract class Address implements \JsonSerializable
      * Country code
      *
      * @param string|null $country
-     * @throws InvalidArgumentException When it does not follow the pattern: "^[A-Z]{2}$"
      */
     public function setCountry(?string $country): void
     {
-        if ($country && preg_match("/^[A-Z]{2}$/", $country) === false)
-            throw new InvalidArgumentException(sprintf("The value %s is invalid", $country));
-
         $this->country = $country;
     }
 
@@ -191,13 +177,9 @@ abstract class Address implements \JsonSerializable
      * City name
      *
      * @param string|null $city The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setCity(?string $city): void
     {
-        if ($city && strlen($city) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "city", 128));
-
         $this->city = $city;
     }
 
@@ -215,13 +197,9 @@ abstract class Address implements \JsonSerializable
      * Country state
      *
      * @param string|null $countryState The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setCountryState(?string $countryState): void
     {
-        if ($countryState && strlen($countryState) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "countryState", 128));
-
         $this->countryState = $countryState;
     }
 
@@ -239,13 +217,9 @@ abstract class Address implements \JsonSerializable
      * Province name
      *
      * @param string|null $province The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setProvince(?string $province): void
     {
-        if ($province && strlen($province) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "province", 128));
-
         $this->province = $province;
     }
 
@@ -262,14 +236,10 @@ abstract class Address implements \JsonSerializable
     /**
      * Building number
      *
-     * @param string|null $buildingNumber The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
+     * @param string|null $buildingNumber The maximum length is 32 characters
      */
     public function setBuildingNumber(?string $buildingNumber): void
     {
-        if ($buildingNumber && strlen($buildingNumber) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "buildingNumber", 128));
-
         $this->buildingNumber = $buildingNumber;
     }
 
@@ -287,13 +257,9 @@ abstract class Address implements \JsonSerializable
      * Room number
      *
      * @param string|null $roomNumber The maximum length is 32 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setRoomNumber(?string $roomNumber): void
     {
-        if ($roomNumber && strlen($roomNumber) > 32)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "roomNumber", 32));
-
         $this->roomNumber = $roomNumber;
     }
 
@@ -311,17 +277,9 @@ abstract class Address implements \JsonSerializable
      * Post code
      *
      * @param string|null $postcode The maximum length is 10 characters and minimum length is 1 character
-     * @throws InvalidArgumentException When you exceed the maximum length, or it does not follow the pattern: "^[a-zA-Z0-9\s\-]+$"
      */
     public function setPostcode(?string $postcode): void
     {
-        if ($postcode && strlen($postcode) > 10)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "postcode", 10));
-
-        if ($postcode && (preg_match("/^[a-zA-Z0-9\s\-]+$/", $postcode) === false || strlen($postcode) < 1))
-            throw new InvalidArgumentException(sprintf("The value %s is invalid", $postcode));
-
-
         $this->postcode = $postcode;
     }
 
@@ -339,13 +297,9 @@ abstract class Address implements \JsonSerializable
      * Company name
      *
      * @param string|null $companyName The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length, or it does not follow the pattern: "^[a-zA-Z0-9\s\-]+$"
      */
     public function setCompanyName(?string $companyName): void
     {
-        if ($companyName && strlen($companyName) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "companyName", 128));
-
         $this->companyName = $companyName;
     }
 
@@ -363,16 +317,9 @@ abstract class Address implements \JsonSerializable
      * Phone number
      *
      * @param string|null $phone The maximum length is 64 characters and minimum length is 2 characters
-     * @throws InvalidArgumentException When you exceed the maximum length, or it does not follow the pattern: "^[a-zA-Z0-9\s\-]+$"
      */
     public function setPhone(?string $phone): void
     {
-        if ($phone && strlen($phone) > 64)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "phone", 64));
-
-        if ($phone && (preg_match("/^[0-9\+]+$/", $phone) === false || strlen($phone) < 2))
-            throw new InvalidArgumentException(sprintf("The value %s is invalid", $phone));
-
         $this->phone = $phone;
     }
 
@@ -390,14 +337,41 @@ abstract class Address implements \JsonSerializable
      * Street name
      *
      * @param string|null $street The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setStreet(?string $street): void
     {
-        if ($street && strlen($street) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "street", 128));
-
-
         $this->street = $street;
+    }
+
+    public function validation(): ValidationList
+    {
+        $validator = Validation::createValidator();
+        $validationList = new ValidationList();
+        $constraints = [new NotBlank(['allowNull' => true]), new Length(['max' => 64]), new Regex("/^[a-zA-Z0-9_-]+$/")];
+        $validationList->add('id', $validator->validate($this->getId(), $constraints));
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Length(['max' => 128])];
+        $validationList->add('firstName', $validator->validate($this->getFirstName(), $constraints));
+        $validationList->add('lastName', $validator->validate($this->getLastName(), $constraints));
+        $validationList->add('street', $validator->validate($this->getStreet(), $constraints));
+        $validationList->add('city', $validator->validate($this->getCity(), $constraints));
+        $validationList->add('countryState', $validator->validate($this->getCountryState(), $constraints));
+        $validationList->add('province', $validator->validate($this->getProvince(), $constraints));
+        $validationList->add('companyName', $validator->validate($this->getCompanyName(), $constraints));
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Country()];
+        $validationList->add('country', $validator->validate($this->getCountry(), $constraints));
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Length(['max' => 32])];
+        $validationList->add('buildingNumber', $validator->validate($this->getBuildingNumber(), $constraints));
+        $validationList->add('roomNumber', $validator->validate($this->getRoomNumber(), $constraints));
+
+        $constraints = [new Length(['min' => 5, 'max' => 6])];
+        $validationList->add('postcode', $validator->validate($this->getPostcode(), $constraints));
+
+        $constraints = [new Length(['min' => 2, 'max' => 64]), new Regex("/^[0-9\+]+$/")];
+        $validationList->add('phone', $validator->validate($this->getPhone(), $constraints));
+
+        return $validationList;
     }
 }

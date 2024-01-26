@@ -9,7 +9,6 @@
 namespace DevLancer\Zen\Container;
 
 use DevLancer\Zen\Enum\CurrencyEnum;
-use DevLancer\Zen\Exception\InvalidArgumentException;
 
 class AuthorizationFee implements \JsonSerializable
 {
@@ -17,9 +16,6 @@ class AuthorizationFee implements \JsonSerializable
     private CurrencyEnum $currency;
     private string $fee;
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function __construct(string $amount, string|CurrencyEnum $currency, string $fee)
     {
         if (is_string($currency))
@@ -40,13 +36,9 @@ class AuthorizationFee implements \JsonSerializable
 
     /**
      * @param string $amount
-     * @throws InvalidArgumentException When it does not follow the pattern: "^-?(?=.*[1-9])\d{1,16}(?:\.\d{1,12})?$"
      */
     public function setAmount(string $amount): void
     {
-        if (preg_match("/^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/", $amount) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $amount));
-
         $this->amount = $amount;
     }
 
@@ -76,16 +68,15 @@ class AuthorizationFee implements \JsonSerializable
 
     /**
      * @param string $fee
-     * @throws InvalidArgumentException When it does not follow the pattern: "^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$"
      */
     public function setFee(string $fee): void
     {
-        if (preg_match("/^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/", $fee) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $fee));
-
         $this->fee = $fee;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function jsonSerialize(): array
     {
         return [

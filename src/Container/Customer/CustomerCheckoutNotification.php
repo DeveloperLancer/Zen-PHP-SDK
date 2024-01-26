@@ -9,33 +9,111 @@
 
 namespace DevLancer\Zen\Container\Customer;
 
-use DevLancer\Zen\Exception\InvalidArgumentException;
-
-/**
- *
- */
-class CustomerCheckoutNotification extends Customer
+class CustomerCheckoutNotification implements \JsonSerializable
 {
+    /**
+     * @var string|null
+     */
+    private ?string $id;
+
+    /**
+     * @var string|null
+     */
+    private ?string $firstName;
+    /**
+     * @var string|null
+     */
+    private ?string $lastName;
+
+    /**
+     * @var string|null
+     */
+    private ?string $email;
+
+    /**
+     * @var string|null
+     */
     private ?string $country;
 
     /**
      * @var null|string
      */
-    private ?string $ip = null;
+    private ?string $ip;
+
+    public function __construct(?string $id = null, ?string $firstName = null, ?string $lastName = null, ?string $email = null, ?string $country = null, ?string $ip = null)
+    {
+        $this->id = $id;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
+        $this->email = $email;
+        $this->country = $country;
+        $this->ip = $ip;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
 
     /**
      * @param string|null $id
-     * @param string|null $firstName First name of the buyer
-     * @param string|null $lastName Last name of the buyer
-     * @param string|null $email Email address of the buyer
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
-    public function __construct(?string $id = null, ?string $firstName = null, ?string $lastName = null, ?string $email = null)
+    public function setId(?string $id): void
     {
-        $this->setId($id);
-        $this->setFirstName($firstName);
-        $this->setLastName($lastName);
-        $this->setEmail($email);
+        $this->id = $id;
+    }
+
+    /**
+     * First name of the buyer
+     *
+     * @return string|null
+     */
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    /**
+     * First name of the buyer
+     *
+     * @param string|null $firstName The maximum length is 128 characters
+     */
+    public function setFirstName(?string $firstName): void
+    {
+        $this->firstName = $firstName;
+    }
+
+    /**
+     * Last name of the buyer
+     *
+     * @return string|null
+     */
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    /**
+     * Last name of the buyer
+     *
+     * @param string|null $lastName The maximum length is 128 characters
+     */
+    public function setLastName(?string $lastName): void
+    {
+        $this->lastName = $lastName;
+    }
+
+    /**
+     * Email address of the buyer
+     *
+     * @param string $email The maximum length is 256 characters
+     */
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
     }
 
     /**
@@ -46,18 +124,6 @@ class CustomerCheckoutNotification extends Customer
     public function getEmail(): ?string
     {
         return $this->email;
-    }
-
-    /**
-     * Email address of the buyer
-     *
-     * @param string|null $email The maximum length is 256 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
-     */
-    public function setEmail(?string $email): void
-    {
-        if ($email)
-            parent::setEmail($email);
     }
 
     /**
@@ -73,8 +139,6 @@ class CustomerCheckoutNotification extends Customer
      */
     public function setCountry(?string $country): void
     {
-        //todo dodac sprawdzanie $country
-
         $this->country = $country;
     }
 
@@ -98,6 +162,9 @@ class CustomerCheckoutNotification extends Customer
         $this->ip = $ip;
     }
 
+    /**
+     * @return array<string, string|null>
+     */
     public function jsonSerialize(): array
     {
         return [

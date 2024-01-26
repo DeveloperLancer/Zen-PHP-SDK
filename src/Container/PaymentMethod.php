@@ -15,8 +15,17 @@ class PaymentMethod implements \JsonSerializable
 {
     private PaymentMethodEnum $name;
     private PaymentChannelEnum $channel;
+
+    /**
+     * @var array<string, mixed>
+     */
     private array $parameters;
 
+    /**
+     * @param string|PaymentMethodEnum $name
+     * @param string|PaymentChannelEnum $channel
+     * @param array<string, mixed> $parameters
+     */
     public function __construct(string|PaymentMethodEnum $name, string|PaymentChannelEnum $channel, array $parameters = [])
     {
         if (is_string($name))
@@ -47,13 +56,16 @@ class PaymentMethod implements \JsonSerializable
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getParameters(): array
     {
         return $this->parameters;
     }
 
+    /**
+     * @return array<string, string|array<string, mixed>>
+     */
     public function jsonSerialize(): array
     {
         return [

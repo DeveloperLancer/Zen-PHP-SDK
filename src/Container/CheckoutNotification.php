@@ -9,7 +9,6 @@
 namespace DevLancer\Zen\Container;
 
 use DevLancer\Zen\Container\Customer\CustomerCheckoutNotification;
-use DevLancer\Zen\Container\Customer\CustomerCheckoutRequest;
 use DevLancer\Zen\Enum\CurrencyEnum;
 use DevLancer\Zen\Enum\StatusEnum;
 use DevLancer\Zen\Enum\TransactionTypeEnum;
@@ -29,6 +28,10 @@ class CheckoutNotification
     private ?CustomerCheckoutNotification $customer = null;
     private ?string $securityStatus = null;
     private ?AuthorizationFee $authorization = null;
+
+    /**
+     * @var array<string, mixed>
+     */
     private array $riskData = [];
     private ?string $email = null;
 
@@ -55,7 +58,7 @@ class CheckoutNotification
     }
 
     /**
-     * @param array $payload
+     * @param array<string, mixed> $payload
      * @return self
      * @throws InvalidArgumentException
      */
@@ -75,16 +78,28 @@ class CheckoutNotification
         $notification->setTransactionId($payload['transactionId']);
         $notification->setSignature($payload['signature']);
 
-        $notification->setCustomer($payload['customer']);
+        if (isset($payload['customer']) && is_array($payload['customer'])) {
+            $customer = $payload['customer'];
+            $customer = new CustomerCheckoutNotification($customer['id'] ?? null, $customer['firstName'] ?? null, $customer['lastName'] ?? null, $customer['email'] ?? null, $customer['country'] ?? null, $customer['ip'] ?? null);
+            $notification->setCustomer($customer);
+
+        }
         $notification->setSecurityStatus($payload['securityStatus']);
-        $notification->setRiskData($payload['riskData'] ?? []);
+        $notification->setRiskData(($payload['riskData'] ?? []));
         $notification->setEmail($payload['email']);
 
-        if (isset($payload['paymentMethod']))
-            $notification->setPaymentMethod($payload['paymentMethod']);
+        if (isset($payload['paymentMethod']) && is_array($payload['paymentMethod'])) {
+            $paymentMethod = $payload['paymentMethod'];
+            $paymentMethod = new PaymentMethod($paymentMethod['name'], $paymentMethod['channel'], $paymentMethod['parameters']);
+            $notification->setPaymentMethod($paymentMethod);
 
-        if (isset($payload['authorization']) && count($payload['authorization']) == 3)
-            $notification->setAuthorization($payload['authorization']);
+        }
+
+        if (isset($payload['authorization']) && is_array($payload['authorization']) && count($payload['authorization']) == 3) {
+            $authorization = $payload['authorization'];
+            $authorization = new AuthorizationFee($authorization['amount'], $authorization['currency'], $authorization['fee']);
+            $notification->setAuthorization($authorization);
+        }
 
         return $notification;
     }
@@ -162,9 +177,9 @@ class CheckoutNotification
     }
 
     /**
-     * @return \DevLancer\Zen\Helper\CustomerCheckout|null
+     * @return CustomerCheckoutNotification|null
      */
-    public function getCustomer(): ?CustomerCheckoutRequest
+    public function getCustomer(): ?CustomerCheckoutNotification
     {
         return $this->customer;
     }
@@ -178,7 +193,7 @@ class CheckoutNotification
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>|array<empty>
      */
     public function getRiskData(): array
     {
@@ -218,36 +233,19 @@ class CheckoutNotification
     }
 
     /**
-     * @param PaymentMethod|array $paymentMethod
+     * @param PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod|array $paymentMethod): void
+    public function setPaymentMethod(PaymentMethod $paymentMethod): void
     {
-        if (is_array($paymentMethod))
-            $paymentMethod = new PaymentMethod($paymentMethod['name'], $paymentMethod['channel'], $paymentMethod['parameters']);
 
         $this->paymentMethod = $paymentMethod;
     }
 
     /**
-     * @param CustomerCheckoutNotification|array $customer
-     * @throws InvalidArgumentException
+     * @param CustomerCheckoutNotification $customer
      */
-    public function setCustomer(CustomerCheckoutNotification|array $customer): void
+    public function setCustomer(CustomerCheckoutNotification $customer): void
     {
-        if (is_array($customer)) {
-            if ($customer == [])
-                return;
-
-            $customerCheckout = new CustomerCheckoutNotification($customer['id'] ?? null, $customer['firstName'] ?? null, $customer['lastName'] ?? null, $customer['email'] ?? null);
-
-            if (isset($customer['ip']))
-                $customerCheckout->setIp($customer['ip']);
-
-            if (isset($customer['country']))
-                $customerCheckout->setCountry($customer['country']);
-
-            $customer = $customerCheckout;
-        }
         $this->customer = $customer;
     }
 
@@ -260,7 +258,7 @@ class CheckoutNotification
     }
 
     /**
-     * @param array $riskData
+     * @param array<string, mixed> $riskData
      */
     public function setRiskData(array $riskData): void
     {
@@ -284,16 +282,10 @@ class CheckoutNotification
     }
 
     /**
-     * @param AuthorizationFee|array $authorization
-     * @throws InvalidArgumentException
+     * @param AuthorizationFee $authorization
      */
-    public function setAuthorization(AuthorizationFee|array $authorization): void
+    public function setAuthorization(AuthorizationFee $authorization): void
     {
-        if (is_array($authorization))
-            $authorization = new AuthorizationFee($authorization['amount'], $authorization['currency'], $authorization['fee']);
-
         $this->authorization = $authorization;
     }
-
-
 }

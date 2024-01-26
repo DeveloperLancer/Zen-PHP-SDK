@@ -11,6 +11,9 @@ namespace DevLancer\Zen\Container\Address;
 
 class ShippingAddress extends Address
 {
+    /**
+     * @return array<string, string|null>
+     */
     public function jsonSerialize(): array
     {
         return [

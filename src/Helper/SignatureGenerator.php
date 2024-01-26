@@ -36,8 +36,8 @@ class SignatureGenerator
     }
 
     /**
-     * @param array $data
-     * @return array
+     * @param array<string|int, mixed> $data
+     * @return array<string|int, mixed>
      */
     public static function removeNullValues(array $data): array
     {
@@ -59,7 +59,7 @@ class SignatureGenerator
     }
 
     /**
-     * @param array $data
+     * @param array<string|int, mixed> $data
      * @return string
      */
     public static function parse(array $data): string
