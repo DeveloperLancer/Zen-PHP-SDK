@@ -9,7 +9,10 @@
 
 namespace DevLancer\Zen\Container\Address;
 
-use DevLancer\Zen\Exception\InvalidArgumentException;
+use DevLancer\Zen\Validation\ValidationList;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Validation;
 
 class BillingAddress extends Address
 {
@@ -28,17 +31,15 @@ class BillingAddress extends Address
 
     /**
      * @param string|null $taxId The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setTaxId(?string $taxId): void
     {
-        if ($taxId && strlen($taxId) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "taxId", 128));
-
-
         $this->taxId = $taxId;
     }
 
+    /**
+     * @return array<string, string|null>
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -57,5 +58,15 @@ class BillingAddress extends Address
             'phone' => $this->getPhone(),
             'taxId' => $this->getTaxId()
         ];
+    }
+
+    public function validation(): ValidationList
+    {
+        $validator = Validation::createValidator();
+        $validationList = parent::validation();
+        $constraints = [new NotBlank(['allowNull' => true]), new Length(['max' => 128])];
+        $validationList->add('taxId', $validator->validate($this->getTaxId(), $constraints));
+
+        return $validationList;
     }
 }

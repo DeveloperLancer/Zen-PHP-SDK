@@ -11,7 +11,7 @@ namespace DevLancer\Zen\Container;
 use ArrayIterator;
 
 /**
- *
+ * @implements \IteratorAggregate<int, ItemCheckout>
  */
 class ItemCheckoutCollection  implements \JsonSerializable, \Countable, \IteratorAggregate
 {
@@ -64,7 +64,7 @@ class ItemCheckoutCollection  implements \JsonSerializable, \Countable, \Iterato
     }
 
     /**
-     * @param int|array $id
+     * @param int|array<int> $id
      * @return void
      */
     public function remove(int|array $id): void
@@ -74,6 +74,9 @@ class ItemCheckoutCollection  implements \JsonSerializable, \Countable, \Iterato
         }
     }
 
+    /**
+     * @return array<int, array<string, string|int|null>>
+     */
     public function jsonSerialize(): array
     {
         $result = [];

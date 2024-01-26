@@ -62,6 +62,8 @@ class Checkout
     }
 
     /**
+     * @param array<string, mixed> $payload
+     * @return CheckoutNotification
      * @throws InvalidArgumentException
      */
     public function getNotification(array $payload): CheckoutNotification

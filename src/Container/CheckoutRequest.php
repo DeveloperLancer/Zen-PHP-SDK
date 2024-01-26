@@ -15,6 +15,14 @@ use DevLancer\Zen\Enum\CurrencyEnum;
 use DevLancer\Zen\Enum\PaymentChannelEnum;
 use DevLancer\Zen\Enum\PaymentMethodEnum;
 use DevLancer\Zen\Exception\InvalidArgumentException;
+use DevLancer\Zen\Validation\ValidationList;
+use Symfony\Component\Validator\Constraints\Language;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Constraints\Url;
+use Symfony\Component\Validator\Constraints\Uuid;
+use Symfony\Component\Validator\Validation;
 
 class CheckoutRequest implements \JsonSerializable
 {
@@ -345,7 +353,7 @@ class CheckoutRequest implements \JsonSerializable
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      * @throws InvalidArgumentException
      */
     public function jsonSerialize(): array
@@ -387,5 +395,55 @@ class CheckoutRequest implements \JsonSerializable
             $result['specifiedPaymentChannel'] = $this->getSpecifiedPaymentChannel()->value;
 
         return $result;
+    }
+
+    public function validation(): ValidationList
+    {
+        $validator = Validation::createValidator();
+        $validationList = new ValidationList();
+
+        $constraints = [new NotBlank(), new Uuid()];
+        $validationList->add('terminalUuid', $validator->validate($this->getTerminalUuid(), $constraints));
+        $constraints = [new NotBlank(), new Regex("/^(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/")];
+        $validationList->add('amount', $validator->validate($this->getAmount(), $constraints));
+        $constraints = [new NotBlank(), new Length(['max' => 128]), new Regex("/^[a-zA-Z0-9?&:\-\/=.,#]+$/")];
+        $validationList->add('merchantTransactionId', $validator->validate($this->getMerchantTransactionId(), $constraints));
+
+        if ($this->getCustomer()) {
+            foreach ($this->getCustomer()->validation()->all() as $key => $value)
+                $validationList->add('customer.' . $key, $value);
+        }
+
+        if ($this->getShippingAddress()) {
+            foreach ($this->getShippingAddress()->validation()->all() as $key => $value)
+                $validationList->add('shippingAddress.' . $key, $value);
+        }
+
+        if ($this->getBillingAddress()) {
+            foreach ($this->getBillingAddress()->validation()->all() as $key => $value)
+                $validationList->add('billingAddress.' . $key, $value);
+        }
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Length(['max' => 256]), new Url()];
+        $validationList->add('urlFailure', $validator->validate($this->getUrlFailure(), $constraints));
+        $validationList->add('urlRedirect', $validator->validate($this->getUrlRedirect(), $constraints));
+        $validationList->add('urlSuccess', $validator->validate($this->getUrlSuccess(), $constraints));
+        $validationList->add('customIpnUrl', $validator->validate($this->getCustomIpnUrl(), $constraints));
+
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Language()]; //todo new Locale() ?
+        $validationList->add('language', $validator->validate($this->getLanguage(), $constraints));
+
+        foreach ($this->getItems() as $id => $item) {
+            foreach ($item->validation()->all() as $key => $value)
+                $validationList->add('items[' . $id . '].' . $key, $value);
+        }
+
+        if ($this->getSpecifiedPaymentChannel()) {
+            //todo sprawdzanie czy channel pasuje do method
+            //todo sprawdzanie czy currency pasuje do wybranego channel
+        }
+
+        return $validationList;
     }
 }

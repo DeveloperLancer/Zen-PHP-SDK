@@ -9,7 +9,12 @@
 
 namespace DevLancer\Zen\Container;
 
-use DevLancer\Zen\Exception\InvalidArgumentException;
+use DevLancer\Zen\Validation\ValidationList;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Positive;
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Validation;
 
 class ItemCheckout implements \JsonSerializable
 {
@@ -25,7 +30,6 @@ class ItemCheckout implements \JsonSerializable
      * @param string $price Unit price of the sold item
      * @param int $quantity Quantity of the sold items
      * @param string $lineAmountTotal Total price of the sold items
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function __construct(string $name, string $price, int $quantity, string $lineAmountTotal)
     {
@@ -40,13 +44,9 @@ class ItemCheckout implements \JsonSerializable
      * Merchant’s code for the sold item
      *
      * @param string $code The maximum length is 64 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setCode(string $code): void
     {
-        if ($code && strlen($code) > 64)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "code", 64));
-
         $this->code = $code;
     }
 
@@ -54,13 +54,9 @@ class ItemCheckout implements \JsonSerializable
      * Merchant’s category for the sold item
      *
      * @param string $category The maximum length is 64 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setCategory(string $category): void
     {
-        if ($category && strlen($category) > 64)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "category", 64));
-
         $this->category = $category;
     }
 
@@ -68,13 +64,9 @@ class ItemCheckout implements \JsonSerializable
      * Name of the sold item
      *
      * @param string $name The maximum length is 128 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setName(string $name): void
     {
-        if ($name && strlen($name) > 128)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "name", 128));
-
         $this->name = $name;
     }
 
@@ -82,13 +74,9 @@ class ItemCheckout implements \JsonSerializable
      * Unit price of the sold item
      *
      * @param string $price
-     * @throws InvalidArgumentException When it does not follow the pattern: "^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$"
      */
     public function setPrice(string $price): void
     {
-        if (preg_match("/^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/", $price) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $price));
-
         $this->price = $price;
     }
 
@@ -96,13 +84,9 @@ class ItemCheckout implements \JsonSerializable
      * Unit price of the sold item
      *
      * @param int $quantity
-     * @throws InvalidArgumentException When the value is less than 1
      */
     public function setQuantity(int $quantity): void
     {
-        if ($quantity < 1)
-            throw new InvalidArgumentException("The value must be greater than 0");
-
         $this->quantity = $quantity;
     }
 
@@ -110,13 +94,9 @@ class ItemCheckout implements \JsonSerializable
      * Total price of the sold items
      *
      * @param string $lineAmountTotal
-     * @throws InvalidArgumentException When it does not follow the pattern: "^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$"
      */
     public function setLineAmountTotal(string $lineAmountTotal): void
     {
-        if (preg_match("/^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/", $lineAmountTotal) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $lineAmountTotal));
-
         $this->lineAmountTotal = $lineAmountTotal;
     }
 
@@ -180,6 +160,9 @@ class ItemCheckout implements \JsonSerializable
         return $this->category;
     }
 
+    /**
+     * @return array<string, string|int|null>
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -190,5 +173,29 @@ class ItemCheckout implements \JsonSerializable
             'quantity' => $this->getQuantity(),
             'lineAmountTotal' => $this->getLineAmountTotal()
         ];
+    }
+
+    public function validation(): ValidationList
+    {
+        $validator = Validation::createValidator();
+        $validationList = new ValidationList();
+
+        $constraints = [new NotBlank(['allowNull' => true]), new Length([ "max" => 64])];
+        $validationList->add('code', $validator->validate($this->getCode(), $constraints));
+        $validationList->add('category', $validator->validate($this->getCategory(), $constraints));
+
+        $constraints = [new NotBlank(), new Length([ "max" => 128])];
+        $validationList->add('name', $validator->validate($this->getName(), $constraints));
+
+        $constraints = [new NotBlank(), new Positive()];
+        $validationList->add('quantity', $validator->validate($this->getQuantity(), $constraints));
+
+        $constraints = [
+            new NotBlank(),
+            new Regex("/^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/") //In the regex documentation it allows a negative value, why?
+        ];
+        $validationList->add('price', $validator->validate($this->getPrice(), $constraints));
+        $validationList->add('lineAmountTotal', $validator->validate($this->getLineAmountTotal(), $constraints)); //todo Verify that lineAmountTotal must be equal to price * quantity
+        return $validationList;
     }
 }
