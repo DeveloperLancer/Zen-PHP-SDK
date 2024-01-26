@@ -11,7 +11,11 @@ namespace DevLancer\Zen\Container;
 use DevLancer\Zen\Enum\CurrencyEnum;
 use DevLancer\Zen\Enum\SortEnum;
 use DevLancer\Zen\Enum\TransactionTypeEnum;
-use DevLancer\Zen\Exception\InvalidArgumentException;
+use DevLancer\Zen\Validation\ValidationList;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
+use Symfony\Component\Validator\Validation;
 
 class TerminalRequest implements \JsonSerializable
 {
@@ -23,9 +27,6 @@ class TerminalRequest implements \JsonSerializable
     private string $page = "1";
     private SortEnum $direction = SortEnum::ASC;
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function __construct(string $requestId, string|TransactionTypeEnum $transactionType, string $amount, string|CurrencyEnum $currency)
     {
         if (is_string($transactionType))
@@ -49,18 +50,10 @@ class TerminalRequest implements \JsonSerializable
     }
 
     /**
-     * @param string $requestId Length [38 .. 1024] characters
-     * @throws InvalidArgumentException When it does not follow the pattern: "^-?(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$"
+     * @param string $requestId
      */
     public function setRequestId(string $requestId): void
     {
-        if (preg_match("/^[a-zA-Z0-9?&:_|\-\/=+.,#\s]+$/", $requestId) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $requestId));
-
-        if (strlen($requestId) < 38 || strlen($requestId) > 1024)
-            throw new InvalidArgumentException("The length of the string must be between 38 and 1024 characters.");
-
-
         $this->requestId = $requestId;
     }
 
@@ -90,13 +83,9 @@ class TerminalRequest implements \JsonSerializable
 
     /**
      * @param string $amount
-     * @throws InvalidArgumentException When it does not follow the pattern: "^(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$"
      */
     public function setAmount(string $amount): void
     {
-        if (preg_match("/^(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/", $amount) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $amount));
-
         $this->amount = $amount;
     }
 
@@ -126,13 +115,9 @@ class TerminalRequest implements \JsonSerializable
 
     /**
      * @param string $itemsPerPage
-     * @throws InvalidArgumentException When it does not follow the pattern: "^[1-9][0-9]*$"
      */
     public function setItemsPerPage(string $itemsPerPage): void
     {
-        if (preg_match("/^[1-9][0-9]*$/", $itemsPerPage) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $itemsPerPage));
-
         $this->itemsPerPage = $itemsPerPage;
     }
 
@@ -146,13 +131,9 @@ class TerminalRequest implements \JsonSerializable
 
     /**
      * @param string $page
-     * @throws InvalidArgumentException When it does not follow the pattern: "^[1-9][0-9]*$"
      */
     public function setPage(string $page): void
     {
-        if (preg_match("/^[1-9][0-9]*$/", $page) === false)
-            throw new InvalidArgumentException(sprintf("The value %f is invalid", $page));
-
         $this->page = $page;
     }
 
@@ -172,6 +153,9 @@ class TerminalRequest implements \JsonSerializable
         $this->direction = $direction;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -183,5 +167,23 @@ class TerminalRequest implements \JsonSerializable
             'itemsPerPage' => $this->getItemsPerPage(),
             'page' => $this->getPage()
         ];
+    }
+
+    public function validation(): ValidationList
+    {
+        $validator = Validation::createValidator();
+        $validationList = new ValidationList();
+
+        $constraints = [new NotBlank(), new Length(['min' => 38, 'max' => 1024]), new Regex("/^[a-zA-Z0-9?&:_|\-\/=+.,#\s]+$/")];
+        $validationList->add('request-id', $validator->validate($this->getRequestId(), $constraints));
+
+        $constraints = [new NotBlank(), new Regex("/^(?=.*[0-9])\d{1,16}(?:\.\d{1,12})?$/")];
+        $validationList->add('amount', $validator->validate($this->getAmount(), $constraints));
+
+        $constraints = [new NotBlank(), new Regex("/^[1-9][0-9]*$/")];
+        $validationList->add('itemsPerPage', $validator->validate($this->getItemsPerPage(), $constraints));
+        $validationList->add('page', $validator->validate($this->getPage(), $constraints));
+
+        return $validationList;
     }
 }
