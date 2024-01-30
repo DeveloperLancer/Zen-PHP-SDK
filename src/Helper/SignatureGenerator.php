@@ -30,9 +30,9 @@ class SignatureGenerator
         $result = self::parse($data);
         $result .= $paywallSecret;
         $algo = "sha256";
-        $hash = hash($algo, $result);
+        $hash = \hash($algo, $result);
 
-        return sprintf("%s;%s", $hash, $algo);
+        return \sprintf("%s;%s", $hash, $algo);
     }
 
     /**
@@ -42,12 +42,12 @@ class SignatureGenerator
     public static function removeNullValues(array $data): array
     {
         foreach ($data as $item => &$value) {
-            if (is_null($value)) {
+            if (\is_null($value)) {
                 unset($data[$item]);
                 continue;
             }
 
-            if (is_array($value)) {
+            if (\is_array($value)) {
                 $value = self::removeNullValues($value);
 
                 if ($value == [])
@@ -66,24 +66,24 @@ class SignatureGenerator
     {
         $result = [];
         foreach ($data as $key => $item) {
-            if (!is_array($item)) {
-                $result[] = strtolower(sprintf('%s=%s', $key, $item));
+            if (!\is_array($item)) {
+                $result[] = \strtolower(\sprintf('%s=%s', $key, $item));
                 continue;
             }
 
             foreach ($item as $index => $value) {
-                if (!is_array($value)) {
-                    $result[] = strtolower(sprintf('%s.%s=%s', $key, $index, $value));
+                if (!\is_array($value)) {
+                    $result[] = \strtolower(\sprintf('%s.%s=%s', $key, $index, $value));
                     continue;
                 }
 
                 foreach ($value as $name => $val)
-                    $result[] = strtolower(sprintf('%s[%s].%s=%s', $key, $index, $name, $val));
+                    $result[] = \strtolower(\sprintf('%s[%s].%s=%s', $key, $index, $name, $val));
             }
         }
 
 
-        sort($result);
-        return implode("&", $result);
+        \sort($result);
+        return \implode("&", $result);
     }
 }

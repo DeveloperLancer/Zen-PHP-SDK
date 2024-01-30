@@ -30,7 +30,7 @@ class TerminalRequest implements \JsonSerializable
     public function __construct(string $requestId, string|TransactionTypeEnum $transactionType, string $amount, string|CurrencyEnum $currency)
     {
         if (is_string($transactionType))
-            $transactionType = TransactionTypeEnum::from($transactionType);
+            $transactionType = TransactionTypeEnum::from($transactionType); //todo w dokumentacji jest regex z TRY_, czy wstępują inne wartości niż te, z enum?
 
         if (is_string($currency))
             $currency = CurrencyEnum::from($currency);

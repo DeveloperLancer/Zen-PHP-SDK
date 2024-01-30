@@ -130,7 +130,7 @@ class CheckoutRequest implements \JsonSerializable
     }
 
     /**
-     * @return \DevLancer\Zen\Container\Address\ShippingAddress|null
+     * @return ShippingAddress|null
      */
     public function getShippingAddress(): ?ShippingAddress
     {
@@ -146,7 +146,7 @@ class CheckoutRequest implements \JsonSerializable
     }
 
     /**
-     * @return \DevLancer\Zen\Container\Address\BillingAddress|null
+     * @return BillingAddress|null
      */
     public function getBillingAddress(): ?BillingAddress
     {
@@ -174,14 +174,10 @@ class CheckoutRequest implements \JsonSerializable
     /**
      * URL for redirection after transaction. Used if "urlSuccess" and "urlFailure" were not specified
      *
-     * @param string $urlRedirect The maximum length is 256 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
+     * @param string $urlRedirect
      */
     public function setUrlRedirect(string $urlRedirect): void
     {
-        if ($urlRedirect && strlen($urlRedirect) > 256)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "urlRedirect", 256));
-
         $this->urlRedirect = $urlRedirect;
     }
 
@@ -199,13 +195,9 @@ class CheckoutRequest implements \JsonSerializable
      * URL for redirection after successful transaction
      *
      * @param string $urlSuccess The maximum length is 256 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
      */
     public function setUrlSuccess(string $urlSuccess): void
     {
-        if ($urlSuccess && strlen($urlSuccess) > 256)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "urlRedirect", 256));
-
         $this->urlSuccess = $urlSuccess;
     }
 
@@ -222,14 +214,10 @@ class CheckoutRequest implements \JsonSerializable
     /**
      * URL for redirection after successful transaction
      *
-     * @param string $urlFailure The maximum length is 256 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
+     * @param string $urlFailure
      */
     public function setUrlFailure(string $urlFailure): void
     {
-        if ($urlFailure && strlen($urlFailure) > 256)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "urlFailure", 256));
-
         $this->urlFailure = $urlFailure;
     }
 
@@ -242,14 +230,10 @@ class CheckoutRequest implements \JsonSerializable
     }
 
     /**
-     * @param string $customIpnUrl The maximum length is 256 characters
-     * @throws InvalidArgumentException When you exceed the maximum length
+     * @param string $customIpnUrl
      */
     public function setCustomIpnUrl(string $customIpnUrl): void
     {
-        if ($customIpnUrl && strlen($customIpnUrl) > 256)
-            throw new InvalidArgumentException(sprintf("The maximum length of the %s variable is %d characters", "customIpnUrl", 256));
-
         $this->customIpnUrl = $customIpnUrl;
     }
 
